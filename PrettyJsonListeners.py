@@ -19,7 +19,8 @@ class PrettyJsonLintListener(sublime_plugin.EventListener, PrettyJsonBaseCommand
             try:
                 self.json_loads(json_content)
             except Exception as ex:
-                self.show_exception(msg=ex)
+                region = sublime.Region(0, view.size())
+                self.show_exception(region=region, msg=ex)
 
 
 class PrettyJsonAutoPrettyOnSaveListener(sublime_plugin.EventListener):
