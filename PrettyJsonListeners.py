@@ -1,9 +1,19 @@
 import sublime
 import sublime_plugin
 
+import os
+
 from .PrettyJson import PrettyJsonBaseCommand
 
 s = sublime.load_settings("Pretty JSON.sublime-settings")
+
+
+def is_sublime_file(view: sublime.View) -> bool:
+  if not view.file_name():
+      return False
+  
+  extension = os.path.splitext(view.file_name())[1]
+  return extension.startswith('.sublime-')
 
 
 class PrettyJsonLintListener(sublime_plugin.EventListener, PrettyJsonBaseCommand):
@@ -13,7 +23,7 @@ class PrettyJsonLintListener(sublime_plugin.EventListener, PrettyJsonBaseCommand
         self.view = view
 
         as_json = s.get("as_json", ["JSON"])
-        if any(syntax in view.settings().get("syntax") for syntax in as_json):
+        if any(syntax in view.settings().get("syntax") for syntax in as_json) and not is_sublime_file(view):
             self.clear_phantoms()
             json_content = view.substr(sublime.Region(0, view.size()))
             try:
@@ -30,5 +40,5 @@ class PrettyJsonAutoPrettyOnSaveListener(sublime_plugin.EventListener):
         self.view = view
 
         as_json = s.get("as_json", ["JSON"])
-        if any(syntax in view.settings().get("syntax") for syntax in as_json):
+        if any(syntax in view.settings().get("syntax") for syntax in as_json) and not is_sublime_file(view):
             view.run_command("pretty_json")
