@@ -5,7 +5,7 @@ import os
 
 from .PrettyJson import PrettyJsonBaseCommand
 
-s = sublime.load_settings("Pretty JSON.sublime-settings")
+settings = sublime.load_settings("Pretty JSON.sublime-settings")
 
 
 def is_sublime_file(view: sublime.View) -> bool:
@@ -18,11 +18,14 @@ def is_sublime_file(view: sublime.View) -> bool:
 
 class PrettyJsonLintListener(sublime_plugin.EventListener, PrettyJsonBaseCommand):
     def on_post_save(self, view):
-        if not s.get("validate_on_save", True):
+        if settings.get("pretty_on_save", False):
+            return
+        
+        if not settings.get("validate_on_save", True):
             return
         self.view = view
 
-        as_json = s.get("as_json", ["JSON"])
+        as_json = settings.get("as_json", ["JSON"])
         if any(syntax in view.settings().get("syntax") for syntax in as_json) and not is_sublime_file(view):
             self.clear_phantoms()
             json_content = view.substr(sublime.Region(0, view.size()))
@@ -35,10 +38,10 @@ class PrettyJsonLintListener(sublime_plugin.EventListener, PrettyJsonBaseCommand
 
 class PrettyJsonAutoPrettyOnSaveListener(sublime_plugin.EventListener):
     def on_pre_save(self, view):
-        if not s.get("pretty_on_save", False):
+        if not settings.get("pretty_on_save", False):
             return
         self.view = view
 
-        as_json = s.get("as_json", ["JSON"])
+        as_json = settings.get("as_json", ["JSON"])
         if any(syntax in view.settings().get("syntax") for syntax in as_json) and not is_sublime_file(view):
             view.run_command("pretty_json")
